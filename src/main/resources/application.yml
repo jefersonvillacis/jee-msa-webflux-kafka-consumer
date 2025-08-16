@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: jee-msa-webflux-kafka-consumer
+    description: Demo project for consuming a message to a Kafka topic using Spring Boot
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+    allowed-headers:
+      - Content-Type
+      - x-guid
+      - x-session
+    timezone: America/Guayaquil
+    topic:
+      name: develop-topic-log
+  r2dbc:
+    url: r2dbc:h2:mem:///BDD_MESSAGE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  sql:
+    init:
+      mode: always # Always initialize the database (use 'never' to disable)
+      platform: h2 # Database platform (h2, mysql, postgresql, etc.)
+      schema-locations: classpath:db/migration/schema-message.sql # Path to the schema file
+
+logging:
+  level:
+    org.apache.kafka: ERROR
+    org.springframework.kafka: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
