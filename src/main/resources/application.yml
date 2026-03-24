@@ -6,20 +6,21 @@ spring:
     name: jee-msa-webflux-kafka-consumer
     description: Demo project for consuming a message to a Kafka topic using Spring Boot
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9092 # Broker or list of brokers to which the client connects
     consumer:
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      group-id: develop-topic-log-group # Unique identifier for the consumer group (consumers with the same group-id belong to the same group and share message consumption)
+      auto-offset-reset: earliest # Defines that reading starts from the oldest available offset in the partition (earliest, latest, none)
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Define how to deserialize the message key (bytes -> string)
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Define how to deserialize the message value (bytes -> string)
       properties:
-        spring.json.trusted.packages: "*"
+        spring.json.trusted.packages: "*" # Allows you to specify which packages are allowed to be deserialized to prevent deserialization attacks (* -> all)
     allowed-headers:
       - Content-Type
       - x-guid
       - x-session
     timezone: America/Guayaquil
     topic:
-      name: develop-topic-log
+      name: develop-topic-log # Name of the Kafka topic to which the consumer will subscribe
   r2dbc:
     url: r2dbc:h2:mem:///BDD_MESSAGE;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
