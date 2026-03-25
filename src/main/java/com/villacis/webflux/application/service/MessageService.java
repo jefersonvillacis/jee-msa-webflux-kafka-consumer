@@ -3,12 +3,13 @@ package com.villacis.webflux.application.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.villacis.webflux.application.input.port.MessageInputPort;
 import com.villacis.webflux.application.output.port.MessageOutputPort;
-import com.villacis.webflux.domain.exception.KafkaMessageProcessingException;
 import com.villacis.webflux.domain.exception.KafkaMessageContentProcessingException;
 import com.villacis.webflux.domain.exception.KafkaMessageHeadersProcessingException;
 import com.villacis.webflux.domain.model.MessageDto;
 import com.villacis.webflux.infrastructure.input.adapter.kafka.config.KafkaPropertiesConfig;
+import com.villacis.webflux.shared.ExceptionLogEntryFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import java.util.Map;
  * @version 1.0
  * @since 10/08/2025 Copyright 2025
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageService implements MessageInputPort {
@@ -45,7 +47,6 @@ public class MessageService implements MessageInputPort {
                                 messageHeaders,
                                 messageContent))
                     .flatMap(messageOutputPort::save))
-        .onErrorMap(KafkaMessageProcessingException::new)
         .then();
   }
 
@@ -56,7 +57,12 @@ public class MessageService implements MessageInputPort {
             stringMessage ->
                 Mono.fromCallable(
                     () -> objectMapper.writeValueAsString(objectMapper.readTree(stringMessage))))
-        .onErrorMap(KafkaMessageContentProcessingException::new);
+        .doOnError(
+            error ->
+                log.error(
+                    "An error occurred while trying to process the message content: {}",
+                    ExceptionLogEntryFactory.createFromThrowable(
+                        new KafkaMessageContentProcessingException(error))));
   }
 
   private Mono<String> extractAllowedHeaders(ConsumerRecord<String, String> consumerRecord) {
@@ -75,6 +81,11 @@ public class MessageService implements MessageInputPort {
                       });
               return objectMapper.writeValueAsString(headers);
             })
-        .onErrorMap(KafkaMessageHeadersProcessingException::new);
+        .doOnError(
+            error ->
+                log.error(
+                    "An error occurred while trying to process the message headers: {}",
+                    ExceptionLogEntryFactory.createFromThrowable(
+                        new KafkaMessageHeadersProcessingException(error))));
   }
 }

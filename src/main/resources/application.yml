@@ -14,6 +14,10 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer # Define how to deserialize the message value (bytes -> string)
       properties:
         spring.json.trusted.packages: "*" # Allows you to specify which packages are allowed to be deserialized to prevent deserialization attacks (* -> all)
+    consumer-strategy:
+      max-concurrency: 10
+      max-attempts: 3
+      min-backoff-seconds: 2
     allowed-headers:
       - Content-Type
       - x-guid

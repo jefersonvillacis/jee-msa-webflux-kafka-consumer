@@ -21,6 +21,7 @@ import java.util.List;
 public class KafkaPropertiesConfig {
     private String bootstrapServers;
     private Consumer consumer;
+    private ConsumerStrategy consumerStrategy;
     private List<String> allowedHeaders;
     private Topic topic;
     private String timezone;
@@ -32,6 +33,14 @@ public class KafkaPropertiesConfig {
         private String autoOffsetReset;
         private String keyDeserializer;
         private String valueDeserializer;
+    }
+
+    @Getter
+    @Setter
+    public static class ConsumerStrategy {
+        private int maxConcurrency;
+        private int maxAttempts;
+        private long minBackoffSeconds;
     }
 
     @Getter
